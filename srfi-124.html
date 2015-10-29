@@ -109,6 +109,24 @@ This procedure must be used with care. If it returns <tt>#f</tt>, that guarantee
            ... code using key and datum ...))
 </pre>
 
+<p>
+<tt>(reference-barrier </tt><em>key</em><tt>)</tt>
+</p>
+
+<p>
+<i>This procedure is optional.</i>
+</p>
+<p>
+This procedure ensures that the garbage collector does not break an
+ephemeron containing an unreferenced key before a certain point in
+a program.
+The program can invoke a <i>reference barrier</i> on the key by
+calling this procedure, which guarantees that
+even if the program does not use the key, it will be considered
+strongly reachable until after <code>reference-barrier</code> returns.
+</p>
+
+
 <h1>Implementation</h1>
 
 <p>
@@ -137,10 +155,13 @@ The following trivial implementation does not have any hooks to the GC, but it i
   (broken? ephemeron-broken?))
 
 (define (make-ephemeron key datum) (%make-ephemeron key datum #f))
+
+(define (reference-barrier key) #t)
 </pre>
 
 <p>
 This implementation layers this SRFI's semantics on top of Racket's native ephemerons.  The idea here is that the native-level ephemeron value is a pair containing the key and the datum, so that the key can be reliably retrieved and a broken ephemeron can be distinguished from one whose key or value is <tt>#f</tt>.
+Reference barriers are not supported.
 </p>
 
 <pre>
