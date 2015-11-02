@@ -33,7 +33,7 @@ class="antispam">nospam</span>srfi.schemers.org</a></code>.  To subscribe to the
 An ephemeron is an object with two components called its <em>key</em> and its <em>datum</em>.  It differs from an ordinary pair as follows:  if the garbage collector (GC) can prove that there are no references to the key except from the ephemeron itself and possibly from the datum, then it is free to <em>break</em> the ephemeron, dropping its reference to both key and datum.  In other words, an ephemeron can be broken when nobody else cares about its key.  Ephemerons can be used to construct weak vectors or lists and (possibly in combination with finalizers) weak hash tables.
 </p>
 
-<p>Much of this specification is derived with thanks from the MIT Scheme specification.</p>
+<p>Much of this specification is derived with thanks from the MIT Scheme Reference Manual.</p>
 
 <h1>Issues</h1>
 
@@ -84,8 +84,15 @@ Returns a newly allocated ephemeron, with components <em>key</em> and <em>datum<
 Returns #t if <em>ephemeron</em> has been broken; otherwise returns #f.
 </p>
 <p>
-This procedure must be used with care. If it returns <tt>#f</tt>, that guarantees only that prior evaluations of <tt>ephemeron-key</tt> or <tt>ephemeron-datum</tt> yielded the key or datum that was stored in <em>ephemeron</em>.  However, it makes no guarantees about subsequent calls to <tt>ephemeron-key</tt> or <tt>ephemeron-datum</tt>, because the GC may run and break the ephemeron immediately after <tt>ephemeron-broken?</tt> returns. Thus, the correct idiom to fetch an ephemeron's key and datum and use them if the ephemeron is not broken is
+This procedure must be used with care. If it returns <tt>#f</tt>, that guarantees only that prior evaluations of <tt>ephemeron-key</tt> or <tt>ephemeron-datum</tt> yielded the key or datum that was stored in <em>ephemeron</em>.  However, it makes no guarantees about subsequent calls to <tt>ephemeron-key</tt> or <tt>ephemeron-datum</tt>, because the GC may run and break the ephemeron immediately after <tt>ephemeron-broken?</tt> returns. Thus, the correct idiom to fetch an ephemeron's key and datum and use them if the ephemeron is not broken is:
 </p>
+<pre>
+     (let ((key (ephemeron-key ephemeron))
+           (datum (ephemeron-datum ephemeron)))
+       (if (ephemeron-broken? ephemeron)
+           ... broken case ...
+           ... code using key and datum ...))
+</pre>
 <p>
 <tt>(ephemeron-key </tt><em>ephemeron</em><tt>)</tt>
 </p>
@@ -99,16 +106,8 @@ These return the key or datum component, respectively, of <em>ephemeron</em>. If
 </p>
 
 <p>
-This procedure must be used with care. If it returns <tt>#f</tt>, that guarantees only that prior evaluations of <tt>ephemeron-key</tt> or <tt>ephemeron-datum</tt> yielded the key or datum that was stored in <em>ephemeron</em>.  However, it makes no guarantees about subsequent calls to <tt>ephemeron-key</tt> or <tt>ephemeron-datum</tt>, because the GC may run and break the ephemeron immediately after <tt>ephemeron-broken?</tt> returns. Thus, the correct idiom to fetch an ephemeron's key and datum and use them if the ephemeron is not broken is
 </p>
 
-<pre>
-     (let ((key (ephemeron-key ephemeron))
-           (datum (ephemeron-datum ephemeron)))
-       (if (ephemeron-broken? ephemeron)
-           ... broken case ...
-           ... code using key and datum ...))
-</pre>
 
 <p>
 <tt>(reference-barrier </tt><em>key</em><tt>)</tt>
@@ -141,6 +140,10 @@ The MIT version allows ephemeron keys and datums to be mutated using
 <tt>set-ephemeron-key!</tt> and <tt>set-ephemeron-datum!</tt>,
 but this SRFI does not require this capacity, as it is tricky to
 implement on systems where the GC runs in a separate thread.
+The effect of mutable ephemerons can be achieved using immutable
+ephemerons that hold <a href="http://srfi.schemers.org/srfi-111/srfi-111.html">
+SRFI 111</a> mutable boxes, provided care is taken to always point to the
+box and not to its contents.
 </p>
 
 <p>
@@ -207,19 +210,19 @@ pointers</a>.
 <p>
 The original paper on ephemerons is Barry Hayes,
 <a href="https://static.aminer.org/pdf/PDF/000/522/273/ephemerons_a_new_finalization_mechanism.pdf">
-“Ephemerons: a New Finalization Mechanism”</a>,
+???Ephemerons: a New Finalization Mechanism???</a>,
 <em>Object-Oriented Languages, Programming, Systems, and Applications</em>, 1997.
 </p>
 <p>
 A useful implementation paper is Bruno Haible,
 <a href="http://www.haible.de/bruno/papers/cs/weak/WeakDatastructures-writeup.html">
-“Weak References: Data Types and Implementation”</a>
+???Weak References: Data Types and Implementation???</a>
 posted 2005-04-24.
 </p>
 
 <p>
 <a href="http://www.inf.puc-rio.br/~roberto/docs/ry08-06.pdf">
-“Eliminating Cycles in Weak Tables”</a>
+???Eliminating Cycles in Weak Tables???</a>
 is about the addition of ephemeron
 tables to Lua 5.2.  It explains how Lua's tricolor mark-sweep GC is
 extended to handle them, unfortunately using the O(N^2) algorithm of
@@ -227,7 +230,7 @@ Hayes 1997.</p>
 
 <p>
 <a href="https://www.cs.hmc.edu/~oneill/papers/Blobs-SPACE.pdf">
-“Extending Garbage Collection to Complex Data Structures”
+???Extending Garbage Collection to Complex Data Structures???
 </a>
 extends ephemerons, which have a fixed GC strategy, to a new data structure
 called <i>blobs</i> that explain to the GC how they are to be processed,
@@ -250,7 +253,7 @@ Thou shalt reclaim it not.
 <p>
 That old familiar tree, <br />
 Whose <tt>cdr</tt>s and whose <tt>car</tt>s <br />
-Are spread o'er memory — <br />
+Are spread o'er memory ??? <br />
 And wouldst thou it <a href="http://catb.org/jargon/html/P/parse.html">unparse</a>? <br />
 GC, cease and desist! <br />
 In it no free list store; <br />
@@ -264,7 +267,7 @@ When it was circular; <br />
 It pointed then to me: <br />
 I was its <tt>cadadr</tt>. <br />
 My <tt>cdr</tt> was a list, <br />
-My <tt>car</tt> a dotted pair — <br />
+My <tt>car</tt> a dotted pair ??? <br />
 That tree will sore be missed <br />
 If it remains not there.
 </p>
@@ -282,7 +285,7 @@ Thou shan't reclaim one cell.
 
 <blockquote>
 <p>
-— <a href="https://en.wikipedia.org/wiki/Guy_L._Steele,_Jr.">The Great Quux</a> (with <a href="http://www.bartleby.com/248/131.html">apologies</a> to <a href="https://en.wikipedia.org/wiki/George_Pope_Morris">George Pope Morris</a>)
+??? <a href="https://en.wikipedia.org/wiki/Guy_L._Steele,_Jr.">The Great Quux</a> (with <a href="http://www.bartleby.com/248/131.html">apologies</a> to <a href="https://en.wikipedia.org/wiki/George_Pope_Morris">George Pope Morris</a>)
 </p>
 </blockquote>
 
