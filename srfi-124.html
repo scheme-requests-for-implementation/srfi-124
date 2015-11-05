@@ -148,56 +148,19 @@ box and not to its contents.
 </p>
 
 <p>
-The following trivial implementation does not have any hooks to the GC, but it is still correct, because there are no guarantees that the GC will ever break any ephemerons, or run at all, or even exist.  (Thanks to Will Clinger for this insight.)  It is portable to any R7RS-small or R5RS + SRFI 9 system.
+The implementation in <code>ephemerons-trivial.scm</code> does not have any hooks to the GC, but it is still a correct implementation, because there are no guarantees that the GC will ever break any ephemerons, or run at all, or even exist.  (Thanks to Will Clinger for this insight.)  It is portable to any R7RS-small or R5RS + SRFI 9 system.
 </p>
 
-<pre>
-(define-record &lt;ephemeron&gt;
-  (%make-ephemeron key datum broken?)
-  ephemeron?
-  (key ephemeron-key)
-  (datum ephemeron-datum)
-  (broken? ephemeron-broken?))
-
-(define (make-ephemeron key datum) (%make-ephemeron key datum #f))
-
-(define (reference-barrier key) #t)
-</pre>
-
 <p>
-This implementation layers this SRFI's semantics on top of Racket's native ephemerons.  The idea here is that the native-level ephemeron value is a pair containing the key and the datum, so that the key can be reliably retrieved and a broken ephemeron can be distinguished from one whose key or value is <tt>#f</tt>.
+The implementation in <code>ephemerons-racket.scm</code> layers this SRFI's semantics on top of Racket's native ephemerons.  The idea here is that the native-level ephemeron value is a pair containing the key and the datum, so that the key can be reliably retrieved and a broken ephemeron can be distinguished from one whose key or value is <tt>#f</tt>.
 Reference barriers are not supported.
 </p>
 
-<pre>
-(define %make-ephemeron make-ephemeron)
-
-;; ephemeron? is already defined correctly
-
-(define (make-ephemeron key datum)
-  (%make-ephemeron key (cons key datum)))
-
-(define (ephemeron-broken? ephemeron)
-  (not (ephemeron-value ephemeron)))
-
-(define (ephemeron-key ephemeron)
-  (let ((value (ephemeron-value ephemeron)))
-    (if (eq? value #f)
-      #f
-      (car value))))
-
-(define (ephemeron-datum ephemeron)
-  (let ((value (ephemeron-value ephemeron)))
-    (if (eq? value #f)
-      #f
-      (cdr value))))
-</pre>
-
-<p>An implementation by Taylor Campbell in Scheme-like pseudocode is
-available in the repository of this SRFI.
-It contains two files, <code>ephemeron-hash.scm</code> and
-<code>ephemeron-tree.scm</code>.  He has offered to provide assistance
-in transforming them into Pre-Scheme for Scheme48.</p>
+<p>The files <code>ephemeron-hash.scm</code> and
+<code>ephemeron-tree.scm</code> are by Taylor Campbell, and constitute
+an demonstration written in pseudo-Scheme of how ephemerons can be
+implemented in full.  He has offered to provide assistance in transforming
+them into Pre-Scheme for Scheme48.</p>
 
 <p>
 Ephemerons with built-in finalizers
