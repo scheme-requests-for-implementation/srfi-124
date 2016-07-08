@@ -179,19 +179,19 @@ pointers</a>.
 <p>
 The original paper on ephemerons is Barry Hayes,
 <a href="https://static.aminer.org/pdf/PDF/000/522/273/ephemerons_a_new_finalization_mechanism.pdf">
-???Ephemerons: a New Finalization Mechanism???</a>,
+"Ephemerons: a New Finalization Mechanism"</a>,
 <em>Object-Oriented Languages, Programming, Systems, and Applications</em>, 1997.
 </p>
 <p>
 A useful implementation paper is Bruno Haible,
 <a href="http://www.haible.de/bruno/papers/cs/weak/WeakDatastructures-writeup.html">
-???Weak References: Data Types and Implementation???</a>
+"Weak References: Data Types and Implementation"</a>
 posted 2005-04-24.
 </p>
 
 <p>
 <a href="http://www.inf.puc-rio.br/~roberto/docs/ry08-06.pdf">
-???Eliminating Cycles in Weak Tables???</a>
+"Eliminating Cycles in Weak Tables"</a>
 is about the addition of ephemeron
 tables to Lua 5.2.  It explains how Lua's tricolor mark-sweep GC is
 extended to handle them, unfortunately using the O(N^2) algorithm of
@@ -199,7 +199,7 @@ Hayes 1997.</p>
 
 <p>
 <a href="https://www.cs.hmc.edu/~oneill/papers/Blobs-SPACE.pdf">
-???Extending Garbage Collection to Complex Data Structures???
+"Extending Garbage Collection to Complex Data Structures"
 </a>
 extends ephemerons, which have a fixed GC strategy, to a new data structure
 called <i>blobs</i> that explain to the GC how they are to be processed,
@@ -222,7 +222,7 @@ Thou shalt reclaim it not.
 <p>
 That old familiar tree, <br />
 Whose <tt>cdr</tt>s and whose <tt>car</tt>s <br />
-Are spread o'er memory ??? <br />
+Are spread o'er memory &#x2014; <br />
 And wouldst thou it <a href="http://catb.org/jargon/html/P/parse.html">unparse</a>? <br />
 GC, cease and desist! <br />
 In it no free list store; <br />
@@ -236,7 +236,7 @@ When it was circular; <br />
 It pointed then to me: <br />
 I was its <tt>cadadr</tt>. <br />
 My <tt>cdr</tt> was a list, <br />
-My <tt>car</tt> a dotted pair ??? <br />
+My <tt>car</tt> a dotted pair &#x2014; <br />
 That tree will sore be missed <br />
 If it remains not there.
 </p>
@@ -254,7 +254,7 @@ Thou shan't reclaim one cell.
 
 <blockquote>
 <p>
-??? <a href="https://en.wikipedia.org/wiki/Guy_L._Steele,_Jr.">The Great Quux</a> (with <a href="http://www.bartleby.com/248/131.html">apologies</a> to <a href="https://en.wikipedia.org/wiki/George_Pope_Morris">George Pope Morris</a>)
+<a href="https://en.wikipedia.org/wiki/Guy_L._Steele,_Jr.">The Great Quux</a> (with <a href="http://www.bartleby.com/248/131.html">apologies</a> to <a href="https://en.wikipedia.org/wiki/George_Pope_Morris">George Pope Morris</a>)
 </p>
 </blockquote>
 
