@@ -2,11 +2,20 @@
 <html>
   <head>
     <title>Ephemerons</title>
-    <link href="/admin.css" rel="stylesheet">
-    <link href="/list.css" rel="stylesheet">
-    <link href="/favicon.png" rel="icon" sizes="192x192" type="image/png">
+    <link href="../srfi-common/admin.css" rel="stylesheet">
+    <link href="../srfi-common/list.css" rel="stylesheet">
+    <link href="../srfi-common/favicon.png" rel="icon" sizes="192x192" type="image/png">
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script type="text/x-mathjax-config">
+     MathJax.Hub.Config({
+       tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+     });
+    </script>
+    <script crossorigin="anonymous" integrity=
+            "sha384-Ra6zh6uYMmH5ydwCqqMoykyf1T/+ZcnOQfFPhDrp2kI4OIxadnhsvvA2vv9A7xYv" src=
+            "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
+            type="text/javascript"></script>
   </head>
 
   <body>
@@ -62,4 +71,15 @@
                  value="unsubscribe" >
           <input name="list"
                  type="hidden"
-                 value="srfi-124@srfi.schemers.org" ></form></li></ul></body></html>
+                 value="srfi-124@srfi.schemers.org"></form></li></ul>
+    <h2>Abstract</h2>      <p>An ephemeron is an object with two components
+      called its <em>key</em> and its <em>datum</em>. It differs from an
+      ordinary pair as follows: if the garbage collector (GC) can prove that
+      there are no references to the key except from the ephemeron itself and
+      possibly from the datum, then it is free to <em>break</em> the ephemeron,
+      dropping its reference to both key and datum. In other words, an
+      ephemeron can be broken when nobody else cares about its key. Ephemerons
+      can be used to construct weak vectors or lists and (possibly in
+      combination with finalizers) weak hash tables.
+      <p>Much of this specification is derived with
+      thanks from the MIT Scheme Reference Manual.</body></html>
