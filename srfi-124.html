@@ -32,6 +32,184 @@ class="antispam">nospam</span>srfi.schemers.org</a></code>.  To subscribe to the
 <li>Draft #4 published: 2015-11-02</li>
 <li>Draft #5 published: 2015-11-04</li>
 <li>Finalized: 2015-11-06</li>
+<li>Revised to fix errata:
+  <ul>
+    <li>2020-11-30 (Made <code><a href="#reference-barrier">reference-barrier</a></code> mandatory.)</li>
+  </ul>
+
+  <h1>Abstract</h1>
+
+  <p>
+    This SRFI describes the API for a full-featured sort toolkit.
+  </p>
+
+  <h1>Rationale</h1>
+
+  <h2>100 SRFIs later...</h2>
+  <p>
+    This SRFI is based on <a href="https://srfi.schemers.org/srfi-32/srfi-32.txt">SRFI 32</a>
+    by Olin Shivers, which was withdrawn twelve years ago.
+  </p>
+  <p>
+    There are two backward incompatible changes to the API.  The most
+    important one is that the
+    comparison predicate now precedes the data rather than following it.
+    Most of the SRFI 32 commenters thought that this is the better order, despite
+    the then-widespread precedent.
+    The other change is that the algorithm-specific
+    procedures have been removed from the SRFI, though not necessarily from
+    the sample implementation.
+    For documentation on them, see SRFI 32 or the source code.
+  </p>
+  <p>
+    Editorially, the text has been reorganized, removing the massive redundancies.
+    As in R5RS and R7RS, procedures that return nothing of interest, and in SRFI 32 returned zero or
+    more unspecified values, are now specified to return one otherwise unspecified value.  The multiple
+    packages, most with only a few procedures, into which SRFI 32 is divided have been consolidated.
+    References to
+    <a href="https://srfi.schemers.org/srfi-95/srfi-95.html">SRFI 95</a> and
+    <a href="http://www.r6rs.org/final/html/r6rs-lib/r6rs-lib-Z-H-5.html#node_chap_4">R6RS</a> equivalents have been added.
+  </p>
+
+
+  <h2 id="Whatvs.how">What vs. how</h2>
+  <p>
+    In SRFI 32 there were two different interfaces: "what" (simple) and "how" (detailed).
+  </p>
+  <ul><li>Simple: you specified semantics: datatype (list or vector), mutability, and stability.
+  </li></ul><ul><li>Detailed: you specified the datatype and the actual algorithm (quick, heap, insert, merge).
+  </li></ul><p>
+    However, the difficulty with exposing specific algorithms by name is that the
+    local optima in the search space of algorithms changes over time.
+    For example, the "qsort" in the musl C library is actually smooth sort, not
+    quick sort; Python and Java have switched from quick sort to timsort;
+    some implementations of the C++ STL use introsort rather than quick sort.
+    Having procedure names that imply e.g. quick sort, that do not actually
+    implement quick sort, is confusing.
+  </p>
+  <p>
+    Therefore, only the "what" interface has been retained.  The sample implementation
+    uses some of the original SRFI 32 algorithms, but this is not a requirement of this SRFI.
+  </p>
+  <h2 id="Consistencyacrossproceduresignatures">Consistency across procedure signatures</h2>
+  <p>
+    Procedures share common signatures wherever
+    possible, to facilitate switching a given call from one procedure
+    to another.
+    
+  </p>
+  <h2 id="Orderingparameterbeforedataparameter">Ordering parameter before data parameter</h2>
+  <p>
+    These procedures uniformly observe the following parameter order:
+    the ordering, equality, or comparison argument
+    precedes the argument(s) denoting the data to be sorted.
+    In SRFI 32, the data-first convention was used, because it was
+    consistent with all the implementations examined in 2002, with
+    the sole exception of Chez Scheme.
+    However, <a href="http://www.r6rs.org/final/html/r6rs-lib/r6rs-lib-Z-H-5.html#node_chap_4">R6RS</a> adopted
+    the procedure-first convention, which is more consistent with other Scheme libraries that
+    put the procedure first — the "operation currying" convention,
+    as in <tt>for-each</tt> or <tt>map</tt> or <tt>find</tt>.
+    This SRFI uses the R6RS convention throughout.
+  </p>
+  <h2 id="Stability">Stability</h2>
+  <p>
+    A "stable" sort is one that preserves the pre-existing order of equal
+    elements. Suppose, for example, that we sort a list of numbers by 
+    comparing their absolute values using <tt>abs&lt;</tt> (defined below).
+    If we sort a list that contains both 3 and -3,
+    then a stable sort is an algorithm that will not swap the order
+    of these two elements, that is, the answer will look like <tt>... 3 -3 ...</tt>,
+    not <tt>... -3 3 ...</tt>.
+  </p>
+  <p>
+    A "stable" merge is one that reliably favors one of its data sets
+    when equal items appear in both data sets.
+    All merge operations specified in this SRFI are stable,
+    breaking ties between data sets in favor
+    of the first data set — elements of the first list come before equal 
+    elements in the second list.
+  </p>
+  <p>
+    So, if we are merging two lists of numbers ordered by absolute value
+    using the stable merge operation <tt>list-merge</tt> and <tt>abs&lt;</tt>
+    compares numbers by their absolute values, then
+  </p>
+  <pre class="wiki">(list-merge abs&lt; '(0 -2 4 8 -10) '(-1 3 -4 7))
+  </pre><p>
+    reliably places the 4 of the first list before the equal-comparing -4
+    of the second list: <tt>(0 -1 -2 4 -4 7 8 -10)</tt>.
+  </p>
+  <p>
+    Here's a definition of <tt>abs&lt;</tt>, introduced just for the examples
+    as it is not part of this SRFI:
+  </p>
+  <pre class="wiki">(define (abs&lt; x y) (&lt; (abs x) (abs y))))
+  </pre><h2 id="Allvectoroperationsacceptoptionalsubrangeparameters">All vector operations accept optional subrange parameters</h2>
+  <p>
+    The vector operations specified below all take optional <em>start</em> and <em>end</em>
+    arguments indicating a selected subrange of a vector's elements.
+    This compensates for the absence in most Schemes of shared subvectors.
+  </p>
+  <h2 id="Requiredvs.allowedside-effects">Required vs. allowed side-effects</h2>
+  <p>
+    The <tt>list-sort!</tt> and <tt>list-stable-sort!</tt> procedures are
+    allowed, but not required,
+    to alter their arguments' cons cells to construct the result list.
+  </p>
+  <p>
+    The other procedures ending in <tt>!</tt>, on the other hand, explicitly
+    commit to the use of side-effects on their input lists in order to guarantee
+    their key algorithmic properties (e.g., linear-time operation, constant-space
+    stack use).
+  </p>
+  <h2 id="Sortinglists">Sorting lists</h2>
+  <p>
+    Note that sorting lists involves chasing pointers through memory, which
+    can be a loser on modern machine architectures because of poor cache and
+    page locality. Pointer <em>writing</em>, which is what the <tt>set-cdr!</tt>s of a
+    destructive list-sort algorithm do, is even worse, especially if your
+    Scheme has a generational GC — the writes will thrash the write-barrier.
+    Sorting vectors has inherently better locality.
+  </p>
+  <p>In particular, all complexity guarantees assume that the basic accessors
+    and mutators of standard Scheme have O(1) space and time complexity.
+  </p>
+  <p>
+    The reference implementation's destructive list merge and merge sort implementations are
+    opportunistic — they avoid redundant <tt>set-cdr!</tt>s, and try to take long
+    already-ordered runs of list structure as-is when doing the merges.
+  </p>
+
+
+  <h1>Specification</h1>
+
+  <h2 id="Procedurenamingandfunctionality">Procedure naming and functionality</h2>
+  <p>
+    Most of the procedures described below are variants of two basic
+    operations: sorting and merging. These procedures are consistently named
+    by composing a set of basic lexemes to indicate what they do.
+  </p>
+  <table class="wiki">
+    <tr><td>Lexeme</td><td style="text-align: left">Meaning
+    </td></tr><tr><td><tt>vector</tt></td><td>The procedure operates upon vectors.
+    </td></tr><tr><td><tt>list</tt></td><td>The procedure operates upon lists.
+    </td></tr><tr><td><tt>stable</tt></td><td>This lexeme indicates that the sort is a stable one.
+    </td></tr><tr><td><tt>sort</tt></td><td>The procedure sorts its input data set by some ordering function.
+    </td></tr><tr><td><tt>merge</tt></td><td>The procedure merges two ordered data sets into a single ordered result.
+    </td></tr><tr><td><tt>!</tt></td><td>Procedures that end in <tt>!</tt> are allowed, and sometimes required, to reuse their input storage to construct their answer.
+    </td></tr></table>
+  <h2 id="Typesofparametersandreturnvalues">Types of parameters and return values</h2>
+  <p>
+    In the procedures specified below:
+  </p>
+  <ul><li>A <em>lis</em> parameter is a list.
+  </li></ul><ul><li>A <em>v</em> parameter is a vector.
+  </li></ul><ul><li>An <em>=</em> parameter is an equality predicate.  See <a href="https://srfi.schemers.org/srfi-128/srfi-128.html">SRFI 128</a> for the requirements on equality predicates.
+    Note that neither this SRFI nor its sample implementation depend on SRFI 128.
+  </li></ul><ul><li>A <em>&lt;</em> parameter is an ordering predicate.  See <a href="https://srfi.schemers.org/srfi-128/srfi-128.html">SRFI 128</a> for the requirements on ordering predicates.
+  </li></ul><ul><li>A <em>start</em> parameter or <em>start</em> and <em>end</em> parameter pair are exact non-negative integers such that 0 &lt;= <em>start</em> &lt;= <em>end</em> &lt;= <tt>(vector-length </tt><em>v</em><tt>)</tt>, where <em>v</em> is the related vector parameter. If not specified, they default to 0 and the length of the vector, respectively. They are interpreted to select the range [<em>start</em>, <em>end</em>), that is, all elements from index <em>start</em> (inclusive) up to, but not including, index <em>end</em>.
+  </li>
 </ul>
 
 <h1>Abstract</h1>
@@ -116,13 +294,10 @@ These return the key or datum component, respectively, of <em>ephemeron</em>. If
 </p>
 
 
-<p>
+<p id="reference-barrier">
 <tt>(reference-barrier </tt><em>key</em><tt>)</tt>
 </p>
 
-<p>
-<i>This procedure is optional.</i>
-</p>
 <p>
 This procedure ensures that the garbage collector does not break an
 ephemeron containing an unreferenced key before a certain point in
@@ -133,6 +308,34 @@ even if the program does not use the key, it will be considered
 strongly reachable until after <code>reference-barrier</code> returns.
 </p>
 
+<p>Because one cannot reliably operate on ephemerons in a portable
+  way without calling the procedure <code>reference-barrier</code>,
+  <code>reference-barrier</code> is mandatory.</p>
+
+<p>The following is an example where <code>reference-barrier</code> is
+  needed:</p>
+
+<pre>
+;; Return the datum component of the ephemeron if its key component is
+KEY. Return #f otherwise.
+(define (ephemeron-ref ephemeron key)
+  (let ((k (ephemeron-key ephemeron))
+        (d (ephemeron-datum ephemeron)))
+    (and (not (ephemeron-broken? ephemeron))
+         (eq? key k)
+         (reference-barrier k)
+         d)))</pre>
+
+<p>In this procedure, the evaluation of <code>(eq? key k)</code>
+  is side-effect-free, so it can be evaluated at any time
+  after <code>k</code> has been retrieved, in particular before the
+  call to <code>ephemeron-broken?</code>. Without the call to
+  <code>reference-barrier</code>, <code>key</code> may, therefore, be
+  no longer referenced when <code>ephemeron-broken?</code> is called.
+  In that case, this predicate would return <code>#f</code>. In other words,
+  without the call to <code>reference-barrier</code>, a Scheme
+  implementation may implement the above procedure as
+  <code>(define (ephemeron-ref ephemeron key) #f)</code>.</p>
 
 <h1>Implementation</h1>
 
