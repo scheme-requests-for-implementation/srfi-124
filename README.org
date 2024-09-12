@@ -1,3 +1,6 @@
+
+# SPDX-FileCopyrightText: 2024 Arthur A. Gleckler
+# SPDX-License-Identifier: MIT
 * SRFI 124: Ephemerons
 
 ** by John Cowan
@@ -9,12 +12,11 @@ keywords: [[https://srfi.schemers.org/?keywords=data-structure][Data Structure]]
 This repository hosts [[https://srfi.schemers.org/srfi-124/][SRFI 124]]: Ephemerons, a [[https://srfi.schemers.org/][Scheme Request for Implementation]].
 
 This SRFI is in /final/ status.
-
+See also [[/srfi-254/][SRFI 254: Ephemerons and Guardians]].
 The full documentation for this SRFI can be found in the [[https://srfi.schemers.org/srfi-124/srfi-124.html][SRFI Document]].
 
 If you'd like to participate in the discussion of this SRFI, or report issues with it, please [[https://srfi.schemers.org/srfi-124/][join the SRFI-124 mailing list]] and send your message there.
 
 Thank you.
-
 
 [[mailto:srfi-editors@srfi.schemers.org][The SRFI Editors]]
